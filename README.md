@@ -20,14 +20,14 @@ File Similarity Checker is a Go-based tool designed to compare files and determi
     ```
 3. Build the project:
     ```bash
-    go build -o checker .
+    go build
     ```
 
 ## Usage
 
 Run the tool with the following command:
 ```bash
-./checker  <directory>
+./similaritychecker  <directory>
 ```
 * Replace <directory> with the path of the directory you want to analyze. If no directory is provided, the tool will default to the current working directory.
 
