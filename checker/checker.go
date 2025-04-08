@@ -46,11 +46,11 @@ func New(directory string) (*CodeSimilarityChecker, error) {
 // findFiles identifies files in the directory
 func (cc *CodeSimilarityChecker) findFiles() error {
 	extensions := []string{
-		".go", ".py", ".js", ".cpp", ".java", ".rs", ".c", ".rb", ".html", ".css", ".php",
-		".txt", ".csv", ".json", ".xml", ".md",
-		".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp",
-		".pdf", ".doc", ".docx", ".xls", ".xlsx",
+		".go", ".py", ".js", ".cpp", ".java", ".rs", ".c", ".rb",
+		".html", ".css", ".php", ".swift", ".ts", ".yaml",
+		".json", ".xml", ".csv", ".txt", ".md",
 	}
+	
 
 	err := filepath.Walk(cc.directory, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
