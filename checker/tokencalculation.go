@@ -1,15 +1,14 @@
 package checker
 
 import (
-	"go/ast"
-	"go/parser"
-	"go/token"
+	"regexp"
+	"strings"
 )
 
-// calculateSmartTokenSimilarity computes similarity between tokenized Go source code
-func calculateSmartTokenSimilarity(code1, code2 string) float64 {
-	tokens1, _ := smartTokenizeGo(code1)
-	tokens2, _ := smartTokenizeGo(code2)
+// calculateTokenSimilarity compares two code files by token set similarity
+func calculateTokenSimilarity(code1, code2 string) float64 {
+	tokens1 := genericTokenize(code1)
+	tokens2 := genericTokenize(code2)
 
 	set1 := make(map[string]struct{})
 	for _, t := range tokens1 {
@@ -22,7 +21,7 @@ func calculateSmartTokenSimilarity(code1, code2 string) float64 {
 
 	intersection := 0
 	for token := range set1 {
-		if _, exists := set2[token]; exists {
+		if _, found := set2[token]; found {
 			intersection++
 		}
 	}
@@ -42,38 +41,51 @@ func calculateSmartTokenSimilarity(code1, code2 string) float64 {
 	return float64(intersection) / float64(len(union)) * 100
 }
 
-// smartTokenizeGo returns a normalized list of Go code tokens
-func smartTokenizeGo(code string) ([]string, error) {
-	fset := token.NewFileSet()
-	node, err := parser.ParseFile(fset, "", code, parser.AllErrors)
-	if err != nil {
-		return nil, err
+// genericTokenize performs language-agnostic tokenization
+func genericTokenize(code string) []string {
+	code = removeComments(code)
+
+	// Replace strings and numbers with generic tokens
+	code = regexp.MustCompile(`"[^"]*"|'[^']*'|`+"`[^`]*`").ReplaceAllString(code, "_str")
+	code = regexp.MustCompile(`\b\d+(\.\d+)?\b`).ReplaceAllString(code, "_num")
+
+	// Split by word boundaries and symbols
+	rawTokens := regexp.MustCompile(`[A-Za-z_]\w*|\S`).FindAllString(code, -1)
+
+	// Normalize identifiers (optional): Replace all variable names with _id
+	keywords := map[string]struct{}{
+		"if": {}, "else": {}, "for": {}, "while": {}, "return": {}, "switch": {}, "case": {}, "func": {},
+		"var": {}, "let": {}, "const": {}, "class": {}, "struct": {}, "import": {}, "package": {}, "public": {},
+		"private": {}, "protected": {}, "def": {}, "end": {}, "do": {}, "try": {}, "catch": {}, "finally": {},
 	}
 
 	var tokens []string
-	ast.Inspect(node, func(n ast.Node) bool {
-		switch x := n.(type) {
-		case *ast.Ident:
+	for _, tok := range rawTokens {
+		lower := strings.ToLower(tok)
+		if _, isKeyword := keywords[lower]; isKeyword {
+			tokens = append(tokens, lower)
+		} else if regexp.MustCompile(`^[A-Za-z_]\w*$`).MatchString(tok) {
 			tokens = append(tokens, "_id")
-		case *ast.BasicLit:
-			tokens = append(tokens, "_val")
-		case *ast.BinaryExpr:
-			tokens = append(tokens, x.Op.String())
-		case *ast.UnaryExpr:
-			tokens = append(tokens, x.Op.String())
-		case *ast.AssignStmt:
-			tokens = append(tokens, "=")
-		case *ast.IfStmt:
-			tokens = append(tokens, "if")
-		case *ast.ForStmt:
-			tokens = append(tokens, "for")
-		case *ast.ReturnStmt:
-			tokens = append(tokens, "return")
-		case *ast.CallExpr:
-			tokens = append(tokens, "call")
+		} else {
+			tokens = append(tokens, tok)
 		}
-		return true
-	})
+	}
 
-	return tokens, nil
+	return tokens
+}
+
+// removeComments strips simple single-line and multi-line comments
+func removeComments(code string) string {
+	// C/Java/JS style comments
+	singleLine := regexp.MustCompile(`(?m)//.*$`)
+	multiLine := regexp.MustCompile(`(?s)/\*.*?\*/`)
+
+	// Python/Ruby/etc style comments
+	pythonLine := regexp.MustCompile(`(?m)#.*$`)
+
+	code = singleLine.ReplaceAllString(code, "")
+	code = multiLine.ReplaceAllString(code, "")
+	code = pythonLine.ReplaceAllString(code, "")
+
+	return code
 }

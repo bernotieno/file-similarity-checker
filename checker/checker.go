@@ -43,9 +43,13 @@ func New(directory string) (*CodeSimilarityChecker, error) {
 	return checker, nil
 }
 
-// findFiles identifies relevant code files
+// findFiles identifies relevant code/text files
 func (cc *CodeSimilarityChecker) findFiles() error {
-	extensions := []string{".go"}
+	extensions := []string{
+		".go", ".py", ".js", ".cpp", ".java", ".rs", ".c", ".rb",
+		".html", ".css", ".php", ".swift", ".ts", ".yaml",
+		".json", ".xml", ".csv", ".txt", ".md",
+	}
 
 	err := filepath.Walk(cc.directory, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -74,7 +78,7 @@ func (cc *CodeSimilarityChecker) findFiles() error {
 	return err
 }
 
-// CompareFiles compares tokenized files
+// CompareFiles performs file comparisons using general token similarity
 func (cc *CodeSimilarityChecker) CompareFiles() ([]SimilarityResult, error) {
 	var results []SimilarityResult
 
@@ -86,7 +90,7 @@ func (cc *CodeSimilarityChecker) CompareFiles() ([]SimilarityResult, error) {
 				continue
 			}
 
-			similarityScore := calculateSmartTokenSimilarity(string(content1), string(content2))
+			similarityScore := calculateTokenSimilarity(string(content1), string(content2))
 			category := categorizeSimilarity(similarityScore)
 
 			result := SimilarityResult{
@@ -102,17 +106,7 @@ func (cc *CodeSimilarityChecker) CompareFiles() ([]SimilarityResult, error) {
 	return results, nil
 }
 
-// Directory returns the directory path
-func (cc *CodeSimilarityChecker) Directory() string {
-	return cc.directory
-}
-
-// Files returns the list of files
-func (cc *CodeSimilarityChecker) Files() []string {
-	return cc.files
-}
-
-// categorizeSimilarity categorizes the similarity score
+// categorizeSimilarity classifies a similarity score into a category
 func categorizeSimilarity(score float64) string {
 	switch {
 	case score >= 90:
@@ -126,4 +120,14 @@ func categorizeSimilarity(score float64) string {
 	default:
 		return "Very Low"
 	}
+}
+
+// Directory returns the comparison root directory
+func (cc *CodeSimilarityChecker) Directory() string {
+	return cc.directory
+}
+
+// Files returns the list of found files
+func (cc *CodeSimilarityChecker) Files() []string {
+	return cc.files
 }
