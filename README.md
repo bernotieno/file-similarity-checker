@@ -67,6 +67,7 @@ File Similarity Checker is a Go-based tool designed to compare files and determi
 ```bash
 ./similaritychecker html ~/projects/
 ```
+ * `N.B`: Open the file in the browser to properly view for the html format
 
 ### 📄 Output
 The generated report will include:
