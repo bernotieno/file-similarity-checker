@@ -45,13 +45,13 @@ func calculateSimilarity(content1, content2 string) float64 {
 }
 
 // categorizeSimilarity determines similarity category
-func categorizeSimilarity(similarityScore float64) string {
-	switch {
-	case similarityScore > 70:
-		return "Very Similar"
-	case similarityScore > 30:
-		return "Similar"
-	default:
-		return "Not Similar"
-	}
-}
+// func categorizeSimilarity(similarityScore float64) string {
+// 	switch {
+// 	case similarityScore > 70:
+// 		return "Very Similar"
+// 	case similarityScore > 30:
+// 		return "Similar"
+// 	default:
+// 		return "Not Similar"
+// 	}
+// }
