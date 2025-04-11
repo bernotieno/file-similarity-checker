@@ -43,15 +43,3 @@ func calculateSimilarity(content1, content2 string) float64 {
 
 	return (2.0 * float64(matchingLines)) / float64(totalLines) * 100
 }
-
-// categorizeSimilarity determines similarity category
-// func categorizeSimilarity(similarityScore float64) string {
-// 	switch {
-// 	case similarityScore > 70:
-// 		return "Very Similar"
-// 	case similarityScore > 30:
-// 		return "Similar"
-// 	default:
-// 		return "Not Similar"
-// 	}
-// }
